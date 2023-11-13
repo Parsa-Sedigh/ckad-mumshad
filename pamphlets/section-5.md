@@ -68,7 +68,28 @@ readiness probe, the service will continue to route traffic only to the older po
 the traffic will be routed to the new pod as well, ensuring no users are affected.
 
 ## 79 - Liveness Probes
+### Docker
+When we run a container with docker using `docker run`, if the container dies, since docker is not an orchestration engine, the container 
+continues to stay dead and deny services to users until you manually create a new container.
 
+### Kubernetes
+In k8s, when we run the same app, every time the app crashes, k8s makes an attempt to restart the container to restore service to users.
+You can see the count of restarts increase in the output of `k get pods`. This works fine. However, what if the app is not really working, but the container
+continues to stay alive? Say for example due to a bug in the code, the app is stuck in an infinite loop. As far as k8s is concerned, the container
+is up, so the app is assumed to be up. But the users hitting the container, are not served.
+
+In this case, the container needs to be restarted or destroyed and a new container is to be brought up. That is where the liveness probe can help us.
+A liveness probe can be configured on the container to periodically test whether the application within the container is actually **healthy**. If the test
+fails, the container is considered unhealthy and is destroyed and recreated.
+
+As a developer, you get to define what it means for an application to be healthy.
+
+### Liveness probes
+- In case of a web application, it could be when the API server is up and running.
+- in case of DB, you may test to see if a particular TCP socket is listening
+- or you may execute a command to perform a test
+
+The liveness probe is defined in the pod-definition file as you did with the readiness probe.
 
 80 - Practice Test Readiness and Liveness Probes
 81 - Solution Readiness and Liveness Probes
