@@ -91,11 +91,64 @@ As a developer, you get to define what it means for an application to be healthy
 
 The liveness probe is defined in the pod-definition file as you did with the readiness probe.
 
-80 - Practice Test Readiness and Liveness Probes
-81 - Solution Readiness and Liveness Probes
-82 - Container Logging
+## 80 - Practice Test Readiness and Liveness Probes
+Link to Practice Test: https://uklabs.kodekloud.com/topic/readiness-probes-2/
+
+## 81 - Solution Readiness and Liveness Probes
+## 82 - Container Logging
+### Logs - docker
+Logging in docker.
+
+If you run `docker run` you can see the logs. But if you run the docker container in the background in a detached mode using `docker run -d`,
+we wouldn't see the logs. If we want to view the logs, we can use `docker logs -f <container id>`. The -f option helps us see the live log trail.
+
+### Logs - kubernetes
+Once the pod is running, we can view the logs with `kubectl logs -f <pod name>`. Use -f to stream the logs live just like the previous docker command.
+
+Now these logs are specific to the container running inside the pod. But k8s pods can have multiple docker containers in them.
+If you run the `k logs -f <pod name>` command now(pod has multiple containers in it), which container's logs would it show?
+You must specify the name of the container explicitly in the command, otherwise it would fail asking you to specify a name. So instead run:
+`k logs -f <pod name> <container name>`.
+
+This is the simple logging functionality implemented within k8s.
+
 83 - Practice Test Container Logging
 84 - Solution Logging optional
-85 - Monitor and Debug Applications
+## 85 - Monitor and Debug Applications
+Monitoring a k8s cluster.
+
+How do you monitor resource consumption on k8s? Or more importantly, what would you like to monitor?
+
+I'd like to know **node-level** metrics, such as the number of nodes in the cluster, how many of them are healthy, as well as performance metrics,
+such as CPU, memory, network and disk utilization. As well as **pod-level** metrics such as the number of pods and the performance metrics of each
+pod such as CPU and memory consumption on them. So we need a solution that will monitor these metrics, store them and provide analytics around this data.
+
+As of this video, k8s does not come with a full-featured builtin monitoring solution. However, there are some OS solutions available today(oct 2018),
+such as metrics server, prometheus, the elastic stack and proprietary solutions like datadog and dynatrace.
+
+In this course, we discuss about metrics-server only.
+
+Heapster was one of the original projects that enabled monitoring and analysis tools for k8s. But it's now deprecated and a slim down version was formed,
+known as the metrics server. You can have one metrics server per k8s cluster.
+
+The metrics server retrieves metrics from each of the k8s nodes and pods, aggregates them and stores them in **memory**. Note that the metrics server
+is only an in-memory monitoring solution and does not store the metrics on the disk and as a result, you can't see historical performance data.
+For that, you must rely on one of the advanced monitoring solutions.
+
+Q: How are the metrics generated for the pods on these nodes?
+
+A: K8s runs an agent on each node, known as the kubelet which is responsible for receiving instructions from the k8s API master server and running pods
+on the nodes. The kubelet also contains a sub-component known as the cAdvisor or container advisor. cAdvisor is responsible for retrieving performance
+metrics from pods and exposing them through the kubelet API to make the metrics available for the metrics server.
+
+### Metrics server - getting started
+If you're using minikube for your local cluster, run: `minikube addons enable metrics-server`. For all other environments, deploy the metrics-server by cloning the
+metrics-server deployment files from github repo and then deploying the required components using `k create -f deploy/1.8+/`. This command,
+deploys a set of pods, services and roles to enable metrics server, to poll for performance metrics from the nodes in the cluster.
+Once deployed, give metrics server some time to collect and process data. Once processed, cluster performance can be viewed by running
+`k top node`. This provides the CPU and memory consumption of each of the nodes.
+
+Use `k top pods` to view performance metrics of pods in k8s.
+
 86 - Practice Test Monitoring
 87 - Solution Monitoring optional
